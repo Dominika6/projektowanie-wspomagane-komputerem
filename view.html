@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Mebel</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <link type="text/css" rel="stylesheet" href="main.css">
+    </head>
+
+    <body>
+        <script type="module">
+
+            import * as THREE from 'https://unpkg.com/three/build/three.module.js';
+            import { TrackballControls } from 'https://unpkg.com/three/examples/jsm/controls/TrackballControls.js';
+
+            var camera, scene, renderer, controls, data;
+            const population_size = 4; // musi być parzysta
+            const number_of_repetitions =5;
+
+
+            init();
+            animate();
+
+            function datas(){
+                data = find_random();
+                return data;
+            }
+
+            function init(){
+
+                //generujemy pierwsze pokolenie
+
+                renderer = new THREE.WebGLRenderer();
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xffffff);
+                camera = new THREE.PerspectiveCamera(60, (window.innerWidth) / (window.innerHeight) , 1, 1000);
+                camera.position.set(0, 50, 30);
+
+                controls = new TrackballControls(camera, renderer.domElement);
+                controls.minDistance = 100;
+                controls.maxDistance = 100;
+
+                scene.add(new THREE.AmbientLight(0x222222));
+
+                var light = new THREE.PointLight(0xffffff);
+                light.position.copy(camera.position);
+
+                var x=-130
+
+                var population = [];
+                for(var j=0;j<population_size;j++){
+                    population[j] = []
+                }
+
+                for (var i = 0; i < population_size; i++) {
+                    data = datas()
+                    translation(data);
+                    var result = rating(data);
+
+                    population[i][0]= data;
+                    population[i][1] = result;
+
+                    console.log("Początkowa populacja",i,": ", population[i])
+
+                    // // Odkomentuj poniższe aby narysować początkową populację
+                    // console.log("rysujemy początkową populację")
+                    //
+                    // var legs_h = legs_height / 2;
+                    // var legs_pos_2 = table_top_size[0] / 2 - 1;
+                    // var legs_pos_1 = table_top_size[1] / 2 - 1;
+                    //
+                    // var geometry1 = new THREE.BoxGeometry(table_top_size[1], table_top_size[0], table_top_thickness);
+                    // var material1 = new THREE.MeshBasicMaterial({color: table_top_color});
+                    // var cube1 = new THREE.Mesh(geometry1, material1);
+                    // cube1.position.set(x, 0, 0);
+                    // scene.add(cube1);
+                    //
+                    // var geometry = new THREE.BoxGeometry(legs_thickness, legs_thickness, legs_height);
+                    // var material = new THREE.MeshBasicMaterial({color: legs_color});
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1+x, legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1+x, -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1-x), legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1-x), -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // if(table_top_size[0] === table_top_size[1]){
+                    //     x += table_top_size[0]*2;
+                    // }
+                    // else if (table_top_size[0] > table_top_size[1]) {
+                    //     x += table_top_size[0]*2;
+                    // }
+                    // else if(table_top_size[0] < table_top_size[1]){
+                    //     x+= table_top_size[1]*2;
+                    // }
+                }
+                console.log("..............")
+                var parents = find_parents(population_size, population)
+
+                var parents_population = [];
+
+                for(var j=0;j<population_size;j++){
+                    parents_population[j] = []
+                }
+
+                var childs = [];
+                var aftermutation = [];
+                var childs_aftermutation = [];
+
+                for(var j=0;j<population_size;j++){
+                    childs_aftermutation[j] = []
+                }
+
+                for ( i = 0; i < population_size; i++) {
+                    data = parents[i]
+                    translation(data);
+                    var presult = rating(data);
+
+                    parents_population[i][0] = data;
+                    parents_population[i][1] = presult;
+
+                    console.log("Parents population(", i, "): ", parents_population[i])
+
+                    // // odkomentuj poniższe aby rysować rodziców
+                    // console.log("rysujemy rodziców")
+
+                    // var legs_h = legs_height / 2;
+                    // var legs_pos_2 = table_top_size[0] / 2 - 1;
+                    // var legs_pos_1 = table_top_size[1] / 2 - 1;
+                    //
+                    // var geometry1 = new THREE.BoxGeometry(table_top_size[1], table_top_size[0], table_top_thickness);
+                    // var material1 = new THREE.MeshBasicMaterial({color: table_top_color});
+                    // var cube1 = new THREE.Mesh(geometry1, material1);
+                    // cube1.position.set(x, 0, 0);
+                    // scene.add(cube1);
+                    //
+                    // var geometry = new THREE.BoxGeometry(legs_thickness, legs_thickness, legs_height);
+                    // var material = new THREE.MeshBasicMaterial({color: legs_color});
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1 + x, legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1 + x, -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1 - x), legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1 - x), -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // if (table_top_size[0] === table_top_size[1]) {
+                    //     x += table_top_size[0] * 2;
+                    // } else if (table_top_size[0] > table_top_size[1]) {
+                    //     x += table_top_size[0] * 2;
+                    // } else if (table_top_size[0] < table_top_size[1]) {
+                    //     x += table_top_size[1] * 2;
+                    // }
+
+                }
+                console.log("..............")
+
+                childs = crossing_genes(parents_population, population_size)
+
+                var childs_tab =[];
+                for(var j=0;j<population_size;j++){
+                    childs_tab[j] = []
+                }
+
+                var aftermutation_childs_tab =[];
+                for(var j=0;j<population_size;j++){
+                    aftermutation_childs_tab[j] = []
+                }
+
+                for(i=0;i<population_size;i++) {
+                    data = childs[i]
+                    translation(childs[i]);
+                    var cresult = rating(childs[i]);
+
+                    childs_tab[i][0] = data;
+                    childs_tab[i][1] = cresult;
+                    console.log("childs",i,":", childs_tab[i])
+
+                    // // odkomentuj aby narysować dzieci
+                    // console.log("rysujemy dzieci")
+
+                    // var legs_h = legs_height / 2;
+                    // var legs_pos_2 = table_top_size[0] / 2 - 1;
+                    // var legs_pos_1 = table_top_size[1] / 2 - 1;
+                    //
+                    // var geometry1 = new THREE.BoxGeometry(table_top_size[1], table_top_size[0], table_top_thickness);
+                    // var material1 = new THREE.MeshBasicMaterial({color: table_top_color});
+                    // var cube1 = new THREE.Mesh(geometry1, material1);
+                    // cube1.position.set(x, 0, 0);
+                    // scene.add(cube1);
+                    //
+                    // var geometry = new THREE.BoxGeometry(legs_thickness, legs_thickness, legs_height);
+                    // var material = new THREE.MeshBasicMaterial({color: legs_color});
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1 + x, legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1 + x, -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1 - x), legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1 - x), -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // if (table_top_size[0] === table_top_size[1]) {
+                    //     x += table_top_size[0] * 2;
+                    // } else if (table_top_size[0] > table_top_size[1]) {
+                    //     x += table_top_size[0] * 2;
+                    // } else if (table_top_size[0] < table_top_size[1]) {
+                    //     x += table_top_size[1] * 2;
+                    // }
+
+                    //MUTACJA, można manipulować częstością zachodzenia mutacji zmieniając mutation_tab
+                    var mutation_tab = [0, 0, 0, 0, 1]
+                    // var mutation_tab = [0, 0, 0, 0, 0, 0, 0, 0, 1]
+                    // var mutation_tab = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+                    var does_it_mutate = random_item(mutation_tab)
+                    if (does_it_mutate === 1) {
+                        aftermutation[i] = mutation(childs_tab[i], i)
+                        console.log("Mamy mutację osobnika: ", i)
+                    } else {
+                        aftermutation[i] = childs_tab[i]
+                    }
+                }
+
+                for(var i=0;i<population_size;i++){
+                    translation(aftermutation[i][0]);
+
+                    aftermutation_childs_tab[i][0] = aftermutation[i][0];
+                    aftermutation_childs_tab[i][1] = rating(aftermutation[i][0]);
+
+                    // // odkomentuj aby narysować dzieci po ewentualnych mutacjach
+                    // console.log("rysujemy dzieci po ewentualnych mutacjach")
+                    //
+                    // var legs_h = legs_height / 2;
+                    // var legs_pos_2 = table_top_size[0] / 2 - 1;
+                    // var legs_pos_1 = table_top_size[1] / 2 - 1;
+                    //
+                    // var geometry1 = new THREE.BoxGeometry(table_top_size[1], table_top_size[0], table_top_thickness);
+                    // var material1 = new THREE.MeshBasicMaterial({color: table_top_color});
+                    // var cube1 = new THREE.Mesh(geometry1, material1);
+                    // cube1.position.set(x, 0, 0);
+                    // scene.add(cube1);
+                    //
+                    // var geometry = new THREE.BoxGeometry(legs_thickness, legs_thickness, legs_height);
+                    // var material = new THREE.MeshBasicMaterial({color: legs_color});
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1+x, legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1+x, -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1-x), legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1-x), -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // if(table_top_size[0] === table_top_size[1]){
+                    //     x += table_top_size[0]*2;
+                    // }
+                    // else if (table_top_size[0] > table_top_size[1]) {
+                    //     x += table_top_size[0]*2;
+                    // }
+                    // else if(table_top_size[0] < table_top_size[1]){
+                    //     x+= table_top_size[1]*2;
+                    // }
+                }
+
+                var last_generation = repeat_all(number_of_repetitions, aftermutation_childs_tab, population_size)
+
+                for(i=0;i<population_size;i++){
+
+                    translation(last_generation[i]);
+
+                    // // odkomentuj, aby narysować ostatnie pokolenie
+                    // console.log("rysujemy ostateczne pokolenie")
+
+                    //
+                    // var legs_h = legs_height / 2;
+                    // var legs_pos_2 = table_top_size[0] / 2 - 1;
+                    // var legs_pos_1 = table_top_size[1] / 2 - 1;
+                    //
+                    // var geometry1 = new THREE.BoxGeometry(table_top_size[1], table_top_size[0], table_top_thickness);
+                    // var material1 = new THREE.MeshBasicMaterial({color: table_top_color});
+                    // var cube1 = new THREE.Mesh(geometry1, material1);
+                    // cube1.position.set(x, 0, 0);
+                    // scene.add(cube1);
+                    //
+                    // var geometry = new THREE.BoxGeometry(legs_thickness, legs_thickness, legs_height);
+                    // var material = new THREE.MeshBasicMaterial({color: legs_color});
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1 + x, legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(legs_pos_1 + x, -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1 - x), legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // var cube = new THREE.Mesh(geometry, material);
+                    // cube.position.set(-(legs_pos_1 - x), -legs_pos_2, legs_h);
+                    // scene.add(cube);
+                    //
+                    // if (table_top_size[0] === table_top_size[1]) {
+                    //     x += table_top_size[0] * 2;
+                    // } else if (table_top_size[0] > table_top_size[1]) {
+                    //     x += table_top_size[0] * 2;
+                    // } else if (table_top_size[0] < table_top_size[1]) {
+                    //     x += table_top_size[1] * 2;
+                    // }
+                }
+            }
+
+            function animate() {
+
+                requestAnimationFrame( animate );
+                controls.update();
+                renderer.render( scene, camera );
+
+            }
+
+        </script>
+        <script type="text/javascript" src="translation.js"></script>
+        <script type="text/javascript" src="find_random.js"></script>
+        <script type="text/javascript" src="rating.js"></script>
+        <script type="text/javascript" src="find_parents.js"></script>
+        <script type="text/javascript" src="mutation.js"></script>
+        <script type="text/javascript" src="crossing_genes.js"></script>
+        <script type="text/javascript" src="repeat_all.js"></script>
+    </body>
+</html>
